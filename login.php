@@ -4,10 +4,7 @@ $usersGet = $db->prepare("SELECT * FROM admins;");
 $usersGet->execute();
 $admins = $usersGet->fetchAll();
 $adminsCount = count($admins);
-//print_r($admins);
 session_start();
-//$users = 'admin';
-//$pass = '827ccb0eea8a706c4c34a16891f84e7b';
 if ($_POST['submit']) {
     for ($i = 0; $i < $adminsCount; $i++) {
         $name = $admins[$i][1];
