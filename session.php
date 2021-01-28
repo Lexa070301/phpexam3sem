@@ -163,7 +163,7 @@ if (isset($_POST['delete_question'])) {
                             $currentValue = stristr($checkboxArray[$j], '=');
                             $currentValue = substr($currentValue, 1);
                             $currentCheckbox = stristr($checkboxArray[$j], '=', true);
-                            echo "<label class='d-block'><input type='checkbox' name='question-" . $questionId . "[]' value='$currentCheckbox=$currentValue' required><span>$currentCheckbox</span></label>";
+                            echo "<label class='d-block'><input type='checkbox' name='question-" . $questionId . "[]' value='$currentCheckbox=$currentValue'><span>$currentCheckbox</span></label>";
                         }
                         echo "</div>";
                         if ($edit) {
