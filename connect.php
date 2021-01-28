@@ -13,9 +13,3 @@ catch (PDOException $e) {
     print('Error!' . $e->getMessage() . '<br/>');
     exit;
 }
-//Пример запроса
-$id = 'mysql';
-
-$stmt = $db->prepare("SELECT * FROM user WHERE 'User' = ?;");
-$stmt->execute(array($id));
-var_dump($stmt->fetch());

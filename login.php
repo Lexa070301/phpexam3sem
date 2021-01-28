@@ -1,13 +1,24 @@
 <?php
+require_once "connect.php";
+$usersGet = $db->prepare("SELECT * FROM admins;");
+$usersGet->execute();
+$admins = $usersGet->fetchAll();
+$adminsCount = count($admins);
+//print_r($admins);
 session_start();
-$users = 'admin';
-$pass = '827ccb0eea8a706c4c34a16891f84e7b';
+//$users = 'admin';
+//$pass = '827ccb0eea8a706c4c34a16891f84e7b';
 if ($_POST['submit']) {
-    if ($users == $_POST['user'] and $pass == md5($_POST['pass'])) {
-        $_SESSION['admin'] = $users;
-        header("Location: index.php");
-        exit;
-    } else echo '<p>Логин или пароль неверны!</p>';
+    for ($i = 0; $i < $adminsCount; $i++) {
+        $name = $admins[$i][1];
+        $pass = $admins[$i][2];
+        if ($name == $_POST['user'] and $pass == md5($_POST['pass'])) {
+            $_SESSION['admin'] = $name;
+            header("Location: index.php");
+            exit;
+        }
+    }
+    echo '<p>Логин или пароль неверны!</p>';
 }
 ?>
 <!doctype html>
@@ -26,7 +37,7 @@ if ($_POST['submit']) {
   <form method="post">
     Username: <input class="form-control" type="text" name="user"/> <br/>
     Password: <input class="form-control" type="password" name="pass"/> <br/>
-    <input type="submit" name="submit" value="Login"/>
+    <input class="btn btn-primary" type="submit" name="submit" value="Login"/>
   </form>
 </div>
 </body>
