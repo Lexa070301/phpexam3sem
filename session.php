@@ -48,16 +48,27 @@ if (isset($_POST['send-answer'])) {
 }
 
 if (isset($_POST['add-question'])) {
-    $post = $_POST['type-question'];
-    switch ($post) {
-        case 1:
-            echo 'test';
+    $sessionId = $_GET['id'];
+    $questionType = $_POST['type-question'];
+    $question = $_POST['question-text'];
+    $answer = null;
+    switch ($questionType) {
+        case 5:
+            $answer = $_POST['question-answer'];
+            break;
+        case 6:
+            $answer = $_POST['question-answer'];
             break;
     }
-//    $questionAdd = $db->prepare("INSERT INTO sessions (id, status) VALUES (?, ?);");
-//    $questionAdd->execute(array(null, 'enabled'));
-//    header("Location: index.php");
+    $questionAdd = $db->prepare("INSERT INTO questions (id, session_id, question_type, question, answer) VALUES (?, ?, ?, ?, ?);");
+    $questionAdd->execute(array(null, $sessionId, $questionType, $question, $answer));
+    header("Refresh: 0");
     exit;
+}
+if (isset($_POST['delete_question'])) {
+    $questionId = $_POST['id'];
+    $questionDelete = $db->prepare("DELETE FROM questions WHERE id = '$questionId'");
+    $questionDelete->execute(array(null, 'enabled'));
 }
 
 ?>
@@ -73,10 +84,19 @@ if (isset($_POST['add-question'])) {
         integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 </head>
 <body>
+<style>
+    .answer-input {
+        display: none;
+    }
+
+    .answer-input.show {
+        display: block;
+    }
+</style>
 <div class="container">
     <?php
     if (isset($_GET['id'])) {
-        if ($session != false) {
+        if ($session != false && $session['status'] != 'closed') {
             echo "<form action='' method='post'>";
             for ($i = 0; $i < $arrLength; $i++) {
                 $questionId = $arr[$i]['id'];
@@ -89,24 +109,36 @@ if (isset($_POST['add-question'])) {
                                 <span>$question</span>
                                 <input class='form-control' type='number' name='question-$questionId' placeholder='Введите любое число' required>
                               </label>";
+                        if ($edit) {
+                            echo "<a href='#' class='delete-btn btn btn-danger btn-sm mb-3' id='$questionId'>Удалить</a>";
+                        }
                         break;
                     case 2:
                         echo "<label class='mb-3' style='width:100%'>
                                 <span>$question</span>
                                 <input class='form-control' type='number' name='question-$questionId' placeholder='Введите неотрицательное число' min='0' required>
                               </label>";
+                        if ($edit) {
+                            echo "<a href='#' class='delete-btn btn btn-danger btn-sm mb-3' id='$questionId'>Удалить</a>";
+                        }
                         break;
                     case 3:
                         echo "<label class='mb-3' style='width:100%'>
                                 <span>$question</span>
                                 <input class='form-control' type='text' name='question-$questionId' placeholder='Введите текст' minlength='1' maxlength='30' required>
                               </label>";
+                        if ($edit) {
+                            echo "<a href='#' class='delete-btn btn btn-danger btn-sm mb-3' id='$questionId'>Удалить</a>";
+                        }
                         break;
                     case 4:
                         echo "<label class='mb-3' style='width:100%'>
                                 <span>$question</span>
                                 <textarea class='form-control' name='question-$questionId' placeholder='Введите текст'  minlength='1' maxlength='255' style='resize: none' required></textarea>
                               </label>";
+                        if ($edit) {
+                            echo "<a href='#' class='delete-btn btn btn-danger btn-sm mb-3' id='$questionId'>Удалить</a>";
+                        }
                         break;
                     case 5:
                         $radioArray = explode(',', $answer);
@@ -119,6 +151,9 @@ if (isset($_POST['add-question'])) {
                             echo "<label class='d-block'><input type='radio' name='question-$questionId' value='$currentRadio=$currentValue' required><span>$currentRadio</span></label>";
                         }
                         echo "</div>";
+                        if ($edit) {
+                            echo "<a href='#' class='delete-btn btn btn-danger btn-sm mb-3' id='$questionId'>Удалить</a>";
+                        }
                         break;
                     case 6:
                         $checkboxArray = explode(',', $answer);
@@ -131,6 +166,9 @@ if (isset($_POST['add-question'])) {
                             echo "<label class='d-block'><input type='checkbox' name='question-" . $questionId . "[]' value='$currentCheckbox=$currentValue' required><span>$currentCheckbox</span></label>";
                         }
                         echo "</div>";
+                        if ($edit) {
+                            echo "<a href='#' class='delete-btn btn btn-danger btn-sm mb-3' id='$questionId'>Удалить</a>";
+                        }
                         break;
                 }
             }
@@ -141,6 +179,10 @@ if (isset($_POST['add-question'])) {
             if ($edit) {
                 echo "<form action='' method='post' style='border: 1px solid lightgrey; border-radius: 10px;; padding: 15px'>
                         <label for='type-question' class='d-block mb-3'>
+                        <span>Введите текст вопроса</span>
+                        <textarea class='form-control' name='question-text' placeholder='Введите текст'  minlength='1' maxlength='255' style='resize: none' required></textarea>
+                        </label>
+                        <label for='type-question' class='d-block mb-3'>
                           <span>Выберите тип вопроса</span>
                           <select class='form-select' name='type-question' id='type-question'>
                             <option value='1'>1</option>                      
@@ -150,7 +192,11 @@ if (isset($_POST['add-question'])) {
                             <option value='5'>5</option>                      
                             <option value='6'>6</option>                      
                           </select>
-                        </label>                      
+                        </label>    
+                        <label for='type-question' class='answer-input mb-3'>
+                        <span>Введите ответ на вопрос</span>
+                        <textarea class='form-control' name='question-answer' placeholder='Введите ответ'  minlength='1' maxlength='255' style='resize: none'></textarea>
+                        </label>              
                         <input class='btn btn-primary' type='submit' name='add-question' value='Добавить'>
                       </form>";
             }
@@ -162,5 +208,30 @@ if (isset($_POST['add-question'])) {
     }
     ?>
 </div>
+<script
+    src="https://code.jquery.com/jquery-3.5.1.min.js"
+    integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+    crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function () {
+        $('.delete-btn').on('click', function () {
+            let id = $(this).attr('id');
+            $.ajax({
+                type: "POST",
+                url: "session.php",
+                data: {id: id, delete_question: true}
+            }).done(function () {
+                location.reload();
+            });
+        });
+        $('.form-select').on('input', function () {
+            if (($(this).val() == 5) || ($(this).val() == 6)) {
+                $('.answer-input').addClass('show');
+            } else {
+                $('.answer-input').removeClass('show');
+            }
+        });
+    });
+</script>
 </body>
 </html>

@@ -26,15 +26,15 @@ if (isset($_POST['new-session'])) {
 }
 if (isset($_POST['delete-session'])) {
     $sessionId = $_POST['session-id'];
-    $sessionDelete = $db->prepare("DELETE FROM sessions WHERE id = '$sessionId'");
-    $sessionDelete->execute(array(null, 'enabled'));
+    $sessionDelete = $db->prepare("DELETE FROM sessions WHERE id = ?");
+    $sessionDelete->execute(array($sessionId));
     header("Location: index.php");
     exit;
 }
 if (isset($_POST['close-session'])) {
     $sessionId = $_POST['session-id'];
-    $sessionDelete = $db->prepare("UPDATE sessions SET status = 'closed' WHERE id = '$sessionId'");
-    $sessionDelete->execute(array(null, 'enabled'));
+    $sessionDelete = $db->prepare("UPDATE sessions SET status = 'closed' WHERE id = ?");
+    $sessionDelete->execute(array($sessionId));
     header("Location: index.php");
     exit;
 }
@@ -65,6 +65,7 @@ if (isset($_POST['close-session'])) {
     <tr>
       <th scope="col">#</th>
       <th scope="col">Статус</th>
+      <th scope="col">Уникальная ссылка</th>
       <th scope="col">Посмотреть</th>
       <th scope="col">Редактировать</th>
       <th scope="col">Протокол</th>
@@ -82,9 +83,11 @@ if (isset($_POST['close-session'])) {
     for ($i = 0; $i < $arrLength; $i++) {
         $sessionId = $arr[$i][0];
         $sessionStatus = $arr[$i][1];
+        $url = $_SERVER['HTTP_HOST'];
         echo "<tr>
               <th><span>$sessionId</span></th>
               <th><span>$sessionStatus</span></th>
+              <th><span>$url/session.php?id=$sessionId</span></th>
               <th><a class='btn btn-primary btn-sm' href='/session.php?id=$sessionId'>Перейти</a></th>
               <th><a class='btn btn-success btn-sm' href='/session.php?id=$sessionId&edit=true'>Редактировать</a></th>
               <th><a class='btn btn-primary btn-sm' href='/protocol.php?id=$sessionId'>Посмотреть протокол</a></th>
